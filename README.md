@@ -11,7 +11,11 @@ Synchronize databases among different sources Xampp, Docker, Vagrant. Do it cros
 * It includes feature like - Backup database with time, Restore latest database using time, Keep last 5 database backup.
 
 ## Commands
-```php
+* For Xampp (Windows/Linux) open any terminal windows and execute command.
+
+* For Vagrant, ssh into vagrant machine `vagrant ssh` and execute command.
+
+```shellscript
 php dbackup backup
 php dbackup restore
 ```

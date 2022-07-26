@@ -13,17 +13,24 @@ $GLOBALS['keep_db'] = 5;
 function get_path() {
     $GLOBALS['mysqldump_path'] = '';
     $GLOBALS['mysql_path'] = '';
+
     // Path in Xampp - Windows OS
     $xampp_win_mysqldump = realpath(dirname(__FILE__).'../../../mysql/bin/mysqldump.exe');
     $xampp_win_mysql = realpath(dirname(__FILE__).'../../../mysql/bin/mysql.exe');
     // Path in Xampp - Linux (Ubuntu) OS
     $xampp_linux_mysqldump = realpath(dirname(__FILE__).'/../../bin/mysqldump');
     $xampp_linux_mysql = realpath(dirname(__FILE__).'/../../bin/mysql');
+    // Path in Vagrant (Laravel Homestead) - Inside Vagrant "vagrant ssh"
+    $vagrant_mysqldump = '/bin/mysqldump';
+    $vagrant_mysql = '/bin/mysql';
+
     // For Windows OS "PHP_OS==WINNT". For Linux (Ubuntu) OS "PHP_OS==Linux"
     if(file_exists($xampp_win_mysqldump) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
         $GLOBALS['mysqldump_path'] = $xampp_win_mysqldump;
     } elseif(file_exists($xampp_linux_mysqldump) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
         $GLOBALS['mysqldump_path'] = $xampp_linux_mysqldump;
+    } elseif(file_exists($vagrant_mysqldump) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
+        $GLOBALS['mysqldump_path'] = $vagrant_mysqldump;
     } else {
         //
     }
@@ -32,6 +39,8 @@ function get_path() {
         $GLOBALS['mysql_path'] = $xampp_win_mysql;
     } elseif(file_exists($xampp_linux_mysql) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
         $GLOBALS['mysql_path'] = $xampp_linux_mysql;
+    } elseif(file_exists($vagrant_mysql) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
+        $GLOBALS['mysql_path'] = $vagrant_mysql;
     } else {
         //
     }
