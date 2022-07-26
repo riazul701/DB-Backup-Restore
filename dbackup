@@ -12,14 +12,28 @@ $GLOBALS['keep_db'] = 5;
 
 function get_path() {
     $GLOBALS['mysqldump_path'] = '';
+    $GLOBALS['mysql_path'] = '';
+    // Path in Xampp - Windows OS
     $xampp_win_mysqldump = realpath(dirname(__FILE__).'../../../mysql/bin/mysqldump.exe');
     $xampp_win_mysql = realpath(dirname(__FILE__).'../../../mysql/bin/mysql.exe');
-    // For Windows "PHP_OS==WINNT"
+    // Path in Xampp - Linux (Ubuntu) OS
+    $xampp_linux_mysqldump = realpath(dirname(__FILE__).'/../../bin/mysqldump');
+    $xampp_linux_mysql = realpath(dirname(__FILE__).'/../../bin/mysql');
+    // For Windows OS "PHP_OS==WINNT". For Linux (Ubuntu) OS "PHP_OS==Linux"
     if(file_exists($xampp_win_mysqldump) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
         $GLOBALS['mysqldump_path'] = $xampp_win_mysqldump;
+    } elseif(file_exists($xampp_linux_mysqldump) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
+        $GLOBALS['mysqldump_path'] = $xampp_linux_mysqldump;
+    } else {
+        //
     }
+
     if(file_exists($xampp_win_mysql) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
         $GLOBALS['mysql_path'] = $xampp_win_mysql;
+    } elseif(file_exists($xampp_linux_mysql) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
+        $GLOBALS['mysql_path'] = $xampp_linux_mysql;
+    } else {
+        //
     }
 
     // echo $GLOBALS['mysqldump_path'] .  PHP_EOL . $GLOBALS['mysql_path'];
