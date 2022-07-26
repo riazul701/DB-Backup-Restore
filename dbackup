@@ -1,0 +1,67 @@
+#!/usr/bin/env php
+<?php
+date_default_timezone_set('Asia/Dhaka');
+// define("BACKUP_PATH", realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'DB_Backups' . DIRECTORY_SEPARATOR);
+define("BACKUP_PATH", realpath(dirname(__FILE__). '/DB_Backups'));
+$GLOBALS['server_name']   = "localhost";
+$GLOBALS['username']      = "root";
+$GLOBALS['password']      = "";
+$GLOBALS['database_name'] = "test_db_1";
+$GLOBALS['date_string']   = date("Y-m-d_his_A");
+$GLOBALS['keep_db'] = 5;
+
+function get_path() {
+    $GLOBALS['mysqldump_path'] = '';
+    $xampp_win_mysqldump = realpath(dirname(__FILE__).'../../../mysql/bin/mysqldump.exe');
+    $xampp_win_mysql = realpath(dirname(__FILE__).'../../../mysql/bin/mysql.exe');
+    // For Windows "PHP_OS==WINNT"
+    if(file_exists($xampp_win_mysqldump) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
+        $GLOBALS['mysqldump_path'] = $xampp_win_mysqldump;
+    }
+    if(file_exists($xampp_win_mysql) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
+        $GLOBALS['mysql_path'] = $xampp_win_mysql;
+    }
+
+    // echo $GLOBALS['mysqldump_path'] .  PHP_EOL . $GLOBALS['mysql_path'];
+}
+
+function backup () {
+    // $cmd = "mysqldump --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} > " . BACKUP_PATH . "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
+
+    $cmd = "{$GLOBALS['mysqldump_path']} --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} > " . BACKUP_PATH . DIRECTORY_SEPARATOR . "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
+    exec($cmd);
+
+    $db_files = array_reverse(scandir(BACKUP_PATH));
+    foreach($db_files as $db_key=>$db_value) {
+        if(($db_key >= $GLOBALS['keep_db']) && ($db_value != ".") && ($db_value != "..")) {
+            unlink(BACKUP_PATH . DIRECTORY_SEPARATOR . $db_value);
+        }
+    }
+    
+
+    // var_dump($db_files);
+    // echo  BACKUP_PATH;
+    // echo 'text from backup fn';
+}
+
+function restore() {
+    $db_files = array_reverse(scandir(BACKUP_PATH));
+    $db_restore_file = $db_files[0];
+    $cmd = "{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file";
+    exec($cmd);
+
+    
+    // echo $db_restore;
+    // echo 'text from restore fn';
+}
+
+if (array_key_exists("1", $argv)) {
+    if (function_exists($argv[1])) {
+        get_path();
+        echo $argv[1]();
+    } else {
+        echo 'Please provide correct argument - backup/restore';
+    }
+} else {
+    echo 'Please provide argument';
+}
