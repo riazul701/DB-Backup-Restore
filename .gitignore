@@ -1,1 +1,2 @@
-DB_Backups/
+DB_Backups/*
+!DB_Backups/.gitkeep
