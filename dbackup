@@ -4,9 +4,9 @@ date_default_timezone_set('Asia/Dhaka');
 // define("BACKUP_PATH", realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'DB_Backups' . DIRECTORY_SEPARATOR);
 define("BACKUP_PATH", realpath(dirname(__FILE__). '/DB_Backups'));
 $GLOBALS['server_name']   = "localhost";
-$GLOBALS['username']      = "root";
-$GLOBALS['password']      = "root";
-$GLOBALS['database_name'] = "test_db_1";
+// $GLOBALS['username']      = "root";
+// $GLOBALS['password']      = "root";
+// $GLOBALS['database_name'] = "test_db_1";
 $GLOBALS['date_string']   = date("Y-m-d_his_A");
 $GLOBALS['keep_db'] = 5;
 
@@ -75,7 +75,7 @@ function backup($software = '') {
 
     } elseif($software == 'docker') {  // For Docker
 
-        echo "Enter Name of MySQL Container: ";
+        echo "Enter MySQL Container Name: ";
         $mysql_container = trim(fgets(fopen("php://stdin","r")));
         // echo PHP_EOL . 'MySQL Container: ' . $mysql_container . PHP_EOL;
 
@@ -108,14 +108,29 @@ function backup($software = '') {
 }
 
 function restore($software = '') {
+
+    $db_files = array_reverse(scandir(BACKUP_PATH));
+    $db_restore_file = $db_files[0];
+
     if(($software == 'xampp') || ($software == 'vagrant')) {  // For Xampp and Vagrant
 
-        $db_files = array_reverse(scandir(BACKUP_PATH));
-        $db_restore_file = $db_files[0];
-        $cmd = "{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file";
+        $cmd = "sudo docker exec -d {$mysql_container} sh -c \"{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file\"";
         exec($cmd);
 
     } elseif($software == 'docker') {
+
+        echo "Enter MySQL Container Name: ";
+        $mysql_container = trim(fgets(fopen("php://stdin","r")));
+        // echo PHP_EOL . 'MySQL Container: ' . $mysql_container . PHP_EOL;
+
+        $cmd = "sudo docker cp ./DB_Backups/{$db_restore_file} {$mysql_container}:/home/{$db_restore_file}";
+        exec($cmd);
+
+        $cmd_2 = "sudo docker exec -d {$mysql_container} sh -c \"{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . "/home/" . "$db_restore_file\"";
+        exec($cmd_2);
+
+        $cmd_3 = "sudo docker exec -d {$mysql_container} sh -c \"rm /home/*.sql\"";
+        exec($cmd_3);
 
     } else {
         //
@@ -127,6 +142,13 @@ function restore($software = '') {
 
 if (array_key_exists("1", $argv) && array_key_exists("2", $argv) && (($argv[1] == 'backup') || ($argv[1] == 'restore')) && (($argv[2] == 'xampp') || ($argv[2] == 'docker') || ($argv[2] == 'vagrant'))) {
     if (function_exists($argv[1])) {
+        echo "Enter MySQL User Name: ";
+        $GLOBALS['username'] = trim(fgets(fopen("php://stdin","r")));
+        echo "Enter MySQL Password: ";
+        $GLOBALS['password'] = trim(fgets(fopen("php://stdin","r")));
+        echo "Enter MySQL Database Name: ";
+        $GLOBALS['database_name'] = trim(fgets(fopen("php://stdin","r")));
+
         get_path($argv[2]);
         echo $argv[1]($argv[2]);
     } else {
