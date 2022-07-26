@@ -5,86 +5,133 @@ date_default_timezone_set('Asia/Dhaka');
 define("BACKUP_PATH", realpath(dirname(__FILE__). '/DB_Backups'));
 $GLOBALS['server_name']   = "localhost";
 $GLOBALS['username']      = "root";
-$GLOBALS['password']      = "";
+$GLOBALS['password']      = "root";
 $GLOBALS['database_name'] = "test_db_1";
 $GLOBALS['date_string']   = date("Y-m-d_his_A");
 $GLOBALS['keep_db'] = 5;
 
-function get_path() {
+function get_path($software = '') {
     $GLOBALS['mysqldump_path'] = '';
     $GLOBALS['mysql_path'] = '';
 
-    // Path in Xampp - Windows OS
-    $xampp_win_mysqldump = realpath(dirname(__FILE__).'../../../mysql/bin/mysqldump.exe');
-    $xampp_win_mysql = realpath(dirname(__FILE__).'../../../mysql/bin/mysql.exe');
-    // Path in Xampp - Linux (Ubuntu) OS
-    $xampp_linux_mysqldump = realpath(dirname(__FILE__).'/../../bin/mysqldump');
-    $xampp_linux_mysql = realpath(dirname(__FILE__).'/../../bin/mysql');
-    // Path in Vagrant (Laravel Homestead) - Inside Vagrant "vagrant ssh"
-    $vagrant_mysqldump = '/bin/mysqldump';
-    $vagrant_mysql = '/bin/mysql';
+    if(($software == 'xampp') || ($software == 'vagrant')) {  // For Xampp and Vagrant
 
-    // For Windows OS "PHP_OS==WINNT". For Linux (Ubuntu) OS "PHP_OS==Linux"
-    if(file_exists($xampp_win_mysqldump) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
-        $GLOBALS['mysqldump_path'] = $xampp_win_mysqldump;
-    } elseif(file_exists($xampp_linux_mysqldump) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
-        $GLOBALS['mysqldump_path'] = $xampp_linux_mysqldump;
-    } elseif(file_exists($vagrant_mysqldump) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
-        $GLOBALS['mysqldump_path'] = $vagrant_mysqldump;
+        // Path in Xampp - Windows OS
+        $xampp_win_mysqldump = realpath(dirname(__FILE__).'../../../mysql/bin/mysqldump.exe');
+        $xampp_win_mysql = realpath(dirname(__FILE__).'../../../mysql/bin/mysql.exe');
+        // Path in Xampp - Linux (Ubuntu) OS
+        $xampp_linux_mysqldump = realpath(dirname(__FILE__).'/../../bin/mysqldump');
+        $xampp_linux_mysql = realpath(dirname(__FILE__).'/../../bin/mysql');
+        // Path in Vagrant (Laravel Homestead) - Inside Vagrant "vagrant ssh"
+        $vagrant_mysqldump = '/bin/mysqldump';
+        $vagrant_mysql = '/bin/mysql';
+
+        // For Windows OS "PHP_OS==WINNT". For Linux (Ubuntu) OS "PHP_OS==Linux"
+        if(file_exists($xampp_win_mysqldump) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
+            $GLOBALS['mysqldump_path'] = $xampp_win_mysqldump;
+        } elseif(file_exists($xampp_linux_mysqldump) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
+            $GLOBALS['mysqldump_path'] = $xampp_linux_mysqldump;
+        } elseif(file_exists($vagrant_mysqldump) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
+            $GLOBALS['mysqldump_path'] = $vagrant_mysqldump;
+        } else {
+            //
+        }
+
+        if(file_exists($xampp_win_mysql) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
+            $GLOBALS['mysql_path'] = $xampp_win_mysql;
+        } elseif(file_exists($xampp_linux_mysql) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
+            $GLOBALS['mysql_path'] = $xampp_linux_mysql;
+        } elseif(file_exists($vagrant_mysql) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
+            $GLOBALS['mysql_path'] = $vagrant_mysql;
+        } else {
+            //
+        }
+
+    } elseif($software == 'docker') {  // For Docker
+
+        // Path in Docker (LaraDock) - Run Command from Host
+        $docker_mysqldump = 'mysqldump';
+        $docker_mysql = 'mysql';
+
+        $GLOBALS['mysqldump_path'] = $docker_mysqldump;
+        $GLOBALS['mysql_path'] = $docker_mysql;
+
     } else {
         //
     }
-
-    if(file_exists($xampp_win_mysql) && (PHP_OS == 'WINNT')) {  // Xampp in Windows OS
-        $GLOBALS['mysql_path'] = $xampp_win_mysql;
-    } elseif(file_exists($xampp_linux_mysql) && (PHP_OS == 'Linux')) {  // Xampp in Linux (Ubuntu) OS
-        $GLOBALS['mysql_path'] = $xampp_linux_mysql;
-    } elseif(file_exists($vagrant_mysql) && (PHP_OS == 'Linux')) {  // Inside Vagrant "vagrant ssh"
-        $GLOBALS['mysql_path'] = $vagrant_mysql;
-    } else {
-        //
-    }
+    
 
     // echo $GLOBALS['mysqldump_path'] .  PHP_EOL . $GLOBALS['mysql_path'];
+    // echo $software;
 }
 
-function backup () {
+function backup($software = '') {
     // $cmd = "mysqldump --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} > " . BACKUP_PATH . "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
 
-    $cmd = "{$GLOBALS['mysqldump_path']} --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} > " . BACKUP_PATH . DIRECTORY_SEPARATOR . "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
-    exec($cmd);
+    if(($software == 'xampp') || ($software == 'vagrant')) {  // For Xampp and Vagrant
+
+        $cmd = "{$GLOBALS['mysqldump_path']} --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} > " . BACKUP_PATH . DIRECTORY_SEPARATOR . "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
+        exec($cmd);
+
+    } elseif($software == 'docker') {  // For Docker
+
+        echo "Enter Name of MySQL Container: ";
+        $mysql_container = trim(fgets(fopen("php://stdin","r")));
+        // echo PHP_EOL . 'MySQL Container: ' . $mysql_container . PHP_EOL;
+
+        $db_file_name = "{$GLOBALS['date_string']}_{$GLOBALS['database_name']}.sql";
+        $cmd = "sudo docker exec -d {$mysql_container} sh -c " . "\"{$GLOBALS['mysqldump_path']} --routines -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} >" . "/home/" . "{$db_file_name}\"";
+        exec($cmd);
+
+        $cmd_2 = "sudo docker cp {$mysql_container}:/home/{$db_file_name} ./DB_Backups";
+        exec($cmd_2);
+
+        $cmd_3 = "sudo docker exec -d {$mysql_container} sh -c \"rm /home/*.sql\"";
+        exec($cmd_3);
+
+        // echo PHP_EOL . 'text from docker - backup fn';
+
+    } else {
+        //
+    }
 
     $db_files = array_reverse(scandir(BACKUP_PATH));
     foreach($db_files as $db_key=>$db_value) {
-        if(($db_key >= $GLOBALS['keep_db']) && ($db_value != ".") && ($db_value != "..")) {
+        if(($db_key >= $GLOBALS['keep_db']) && ($db_value != ".") && ($db_value != "..") && ($db_value != ".gitkeep")) {
             unlink(BACKUP_PATH . DIRECTORY_SEPARATOR . $db_value);
         }
     }
-    
 
     // var_dump($db_files);
     // echo  BACKUP_PATH;
     // echo 'text from backup fn';
 }
 
-function restore() {
-    $db_files = array_reverse(scandir(BACKUP_PATH));
-    $db_restore_file = $db_files[0];
-    $cmd = "{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file";
-    exec($cmd);
+function restore($software = '') {
+    if(($software == 'xampp') || ($software == 'vagrant')) {  // For Xampp and Vagrant
 
-    
+        $db_files = array_reverse(scandir(BACKUP_PATH));
+        $db_restore_file = $db_files[0];
+        $cmd = "{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file";
+        exec($cmd);
+
+    } elseif($software == 'docker') {
+
+    } else {
+        //
+    }
+
     // echo $db_restore;
     // echo 'text from restore fn';
 }
 
-if (array_key_exists("1", $argv)) {
+if (array_key_exists("1", $argv) && array_key_exists("2", $argv) && (($argv[1] == 'backup') || ($argv[1] == 'restore')) && (($argv[2] == 'xampp') || ($argv[2] == 'docker') || ($argv[2] == 'vagrant'))) {
     if (function_exists($argv[1])) {
-        get_path();
-        echo $argv[1]();
+        get_path($argv[2]);
+        echo $argv[1]($argv[2]);
     } else {
-        echo 'Please provide correct argument - backup/restore';
+        echo 'Please Provide Correct Argument - backup/restore';
     }
 } else {
-    echo 'Please provide argument';
+    echo 'Please Provide Argument-1 (backup/restore) and Argument-2 (xampp/docker/vagrant)' . PHP_EOL;
 }
