@@ -114,7 +114,7 @@ function restore($software = '') {
 
     if(($software == 'xampp') || ($software == 'vagrant')) {  // For Xampp and Vagrant
 
-        $cmd = "sudo docker exec -d {$mysql_container} sh -c \"{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file\"";
+        $cmd = "{$GLOBALS['mysql_path']} -h {$GLOBALS['server_name']} -u {$GLOBALS['username']} -p{$GLOBALS['password']} {$GLOBALS['database_name']} < " . BACKUP_PATH . DIRECTORY_SEPARATOR . "$db_restore_file";
         exec($cmd);
 
     } elseif($software == 'docker') {
