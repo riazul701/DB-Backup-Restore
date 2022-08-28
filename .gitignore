@@ -1,2 +1,3 @@
 DB_Backups/*
 !DB_Backups/.gitkeep
+dbackup-config.php

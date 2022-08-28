@@ -4,11 +4,13 @@
 Synchronize databases among different sources Xampp, Docker, Vagrant. Do it cross platform Windows, Linux(Ubuntu).
 
 ## Do Work
-* Place "dbackup" file at project root.
+* Rename "dbackup-config-example.php" to "dbackup-config.php" and set necessary configuration values.
+
+* Place "dbackup" and "dbackup-config.php" file at project root.
 
 * Run this script from php command line and it will backup database into specific "DB_Backups" folder.
 
-* It includes feature like - Backup database with time, Restore latest database using time, Keep last 5 database backup.
+* It includes feature like - Backup database with time (Both local PC and FTP server), Restore latest database using time, Fetch database from FTP server, Keep last 5 database backup.
 
 ## Commands
 * For Xampp (Windows/Linux) open any terminal window and execute command.
@@ -27,6 +29,11 @@ php dbackup restore docker
 ```shellscript
 php dbackup backup vagrant
 php dbackup restore vagrant
+```
+
+* To fetch database from FTP server
+```shellscript
+php dbackup fetch
 ```
 
 ## Future Work:
