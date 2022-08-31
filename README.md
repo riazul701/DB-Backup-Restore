@@ -12,6 +12,8 @@ Synchronize databases among different sources Xampp, Docker, Vagrant. Do it cros
 
 * It includes feature like - Backup database with time (Both local PC and FTP server), Restore latest database using time, Fetch database from FTP server, Keep last 5 database backup.
 
+* In FTP database backup folder, create `.htaccess` file and enter this code `Deny From All`. This will restrict public access from database files.
+
 ## Commands
 * For Xampp (Windows/Linux) open any terminal window and execute command.
 ```shellscript
