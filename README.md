@@ -8,7 +8,7 @@ Synchronize databases among different sources Xampp, Docker, Vagrant. Do it cros
 
 * Place "dbackup" and "dbackup-config.php" file at project root.
 
-* Run this script from php command line and it will backup database into specific "DB_Backups" folder.
+* Run this script from php command line and it will backup database into specific "_database_sync" folder.
 
 * It includes feature like - Backup database with time (Both local PC and FTP server), Restore latest database using time, Fetch database from FTP server, Keep last 5 database backup.
 

@@ -17,6 +17,6 @@ $GLOBALS['ftp_password'] = '';
 $GLOBALS['ftp_path'] = '';
 
 // Backup Path
-// define("BACKUP_PATH", realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'DB_Backups' . DIRECTORY_SEPARATOR);
-define("BACKUP_PATH", realpath(dirname(__FILE__). '/DB_Backups'));
+// define("BACKUP_PATH", realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . '_database_sync' . DIRECTORY_SEPARATOR);
+define("BACKUP_PATH", realpath(dirname(__FILE__). '/_database_sync'));
 $GLOBALS['keep_db'] = 5;
