@@ -1,10 +1,2 @@
-# PHP
-php/_database_sync/*
-!php/_database_sync/.gitkeep
-php/dbackup-config.php
-
-# BASH
-bash/_database/structure/*
-!bash/_database/structure/.gitkeep
-bash/_database/data/*
-!bash/_database/data/.gitkeep
+_database/full/*
+!_database/full/.gitkeep
