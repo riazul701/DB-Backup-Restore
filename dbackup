@@ -1,0 +1,73 @@
+#!/bin/bash
+
+db_store_path="_database"
+db_server_name='localhost'
+db_user_name='root'
+db_password=''
+database_name='test_db_1'
+
+function db_backup() {
+  if [ ! -d "${db_store_path}/structure" ]
+  then
+    mkdir -p "${db_store_path}/structure"
+  fi
+  if [ ! -d "${db_store_path}/data" ]
+  then
+    mkdir -p "${db_store_path}/data"
+  fi
+  eval rm "${db_store_path}/data/*"
+
+  if [[ ${development_env} == 'xampp' ]]
+  then
+    ${mysqldump_path} --routines -h ${db_server_name} -u ${db_user_name} -p${db_password} ${database_name} > "${db_store_path}/structure/${database_name}.sql"
+  elif [[ ${development_env} == 'docker' ]]
+  then
+    echo 'Docker-Backup has not impemented yet.'
+	exit
+  elif [[ ${development_env} == 'vagrant' ]]
+  then
+    echo 'Vagrant-Backup has not impemented yet.'
+	exit
+  fi
+}
+
+development_env="$1" # Development Environment: xampp/docker/vagrant
+work_type="$2" # Work Type: backup/restore/fetch
+
+if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup') ]]
+then
+  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup)"
+  exit
+fi
+
+operating_system=$(uname -s)
+if [[ ${development_env} == 'xampp' ]]
+then
+  if [[ ${operating_system} == 'Linux' ]]
+  then
+    mysqldump_path=''
+    mysql_path=''
+	editor_open_command="${linux_editor} "
+  else # Windows-OS
+    mysqldump_path='../../mysql/bin/mysqldump.exe'
+    mysql_path='../../mysql/bin/mysql.exe'
+	editor_open_command="start ${windows_editor} "
+  fi
+elif [[ ${development_env} == 'docker' ]]
+then
+  mysqldump_path='mysqldump'
+  mysql_path='mysql'
+elif [[ ${development_env} == 'vagrant' ]]
+then
+  mysqldump_path='/bin/mysqldump' # Laravel-Homestead
+  mysql_path='/bin/mysql' # Laravel-Homestead
+fi
+
+
+if [[ ${work_type} == 'backup' ]]
+then
+  db_backup
+#elif [[ ${work_type} == 'restore' ]]
+#then
+  #db_restore
+fi
