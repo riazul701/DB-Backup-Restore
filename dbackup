@@ -1,25 +1,25 @@
 #!/bin/bash
 
-db_store_path="_database"
+base_path="_database"
 db_server_name='localhost'
 db_user_name='root'
 db_password=''
 database_name='test_db_1'
 
 function db_backup() {
-  if [ ! -d "${db_store_path}/structure" ]
+  if [ ! -d "${base_path}/structure" ]
   then
-    mkdir -p "${db_store_path}/structure"
+    mkdir -p "${base_path}/structure"
   fi
-  if [ ! -d "${db_store_path}/data" ]
+  if [ ! -d "${base_path}/data" ]
   then
-    mkdir -p "${db_store_path}/data"
+    mkdir -p "${base_path}/data"
   fi
-  eval rm "${db_store_path}/data/*"
+  eval rm "${base_path}/data/*"
 
   if [[ ${development_env} == 'xampp' ]]
   then
-    ${mysqldump_path} --routines -h ${db_server_name} -u ${db_user_name} -p${db_password} ${database_name} > "${db_store_path}/structure/${database_name}.sql"
+    ${mysqldump_path} --routines -h ${db_server_name} -u ${db_user_name} -p${db_password} ${database_name} > "${base_path}/structure/${database_name}.sql"
   elif [[ ${development_env} == 'docker' ]]
   then
     echo 'Docker-Backup has not impemented yet.'
@@ -31,12 +31,21 @@ function db_backup() {
   fi
 }
 
+function php_execute() {
+  php_command="$1"
+  ${php_path} ${php_command}
+}
+
+function setup_environment {
+  ${php_path} -r "copy('https://getcomposer.org/installer', '${base_path}/composer-setup.php');"
+}
+
 development_env="$1" # Development Environment: xampp/docker/vagrant
 work_type="$2" # Work Type: backup/restore/fetch
 
-if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup') ]]
+if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'php' && ${work_type} != 'setup' ) ]]
 then
-  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup)"
+  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php)"
   exit
 fi
 
@@ -47,10 +56,12 @@ then
   then
     mysqldump_path=''
     mysql_path=''
+	php_path=''
 	editor_open_command="${linux_editor} "
   else # Windows-OS
     mysqldump_path='../../mysql/bin/mysqldump.exe'
     mysql_path='../../mysql/bin/mysql.exe'
+	php_path='../../php/php.exe'
 	editor_open_command="start ${windows_editor} "
   fi
 elif [[ ${development_env} == 'docker' ]]
@@ -67,7 +78,10 @@ fi
 if [[ ${work_type} == 'backup' ]]
 then
   db_backup
-#elif [[ ${work_type} == 'restore' ]]
-#then
-  #db_restore
+elif [[ ${work_type} == 'php' ]]
+then
+  php_execute "$3"
+elif [[ ${work_type} == 'setup' ]]
+then
+  setup_environment
 fi
