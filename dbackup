@@ -2,7 +2,8 @@
 
 base_path="__database"
 source "${base_path}/config"
-#echo "DB Host Name: ${db_host_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}"
+#dump_table_data="'table 1' 'table 2'"
+echo "DB Host Name: ${db_host_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}; Dump Table Data: ${dump_table_data}"
 
 function db_backup() {
   if [ ! -d "${base_path}/structure" ]
@@ -20,15 +21,16 @@ function db_backup() {
 	  mkdir -p "${base_path}/full"
 	fi
   fi
-  eval rm "${base_path}/data/*"
+  #eval rm "${base_path}/data/*"
 
   if [[ ${development_env} == 'xampp' ]]
   then
-    ${mysqldump_path} --routines --no-data -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
+    ${mysqldump_path} --routines --no-data --compact -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
 	if [[ ${db_full_backup} == 'yes' ]]
 	then
 	  ${mysqldump_path} --routines -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
 	fi
+	eval "${mysqldump_path} --routines --no-create-info --compact -h \"${db_host_name}\" -u \"${db_user_name}\" -p\"${db_password}\" \"${database_name}\" ${dump_table_data} > \"${base_path}/data/${database_name}(data).sql\""
   elif [[ ${development_env} == 'docker' ]]
   then
     echo 'Docker-Backup has not impemented yet.'

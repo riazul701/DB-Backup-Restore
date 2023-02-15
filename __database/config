@@ -2,3 +2,4 @@ db_host_name='localhost'
 db_user_name='root'
 db_password=''
 database_name='test db 1'
+dump_table_data="'table 1' 'table 2'"
