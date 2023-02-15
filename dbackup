@@ -36,19 +36,17 @@ function php_execute() {
   ${php_path} ${php_command}
 }
 
-function setup_environment {
-  original_pwd="${PWD}"
-  cd "${base_path}"
+#function composer_execute() {}
 
+function setup_environment {
   # Setup Composer
-  ${php_path} -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-  ${php_path} -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-  ${php_path} composer-setup.php
-  ${php_path} -r "unlink('composer-setup.php');"
-  mv composer.phar composer.phar
-  
+  ${php_path} -r "copy('https://getcomposer.org/installer', '${base_path}/composer-setup.php');"
+  ${php_path} -r "if (hash_file('sha384', '${base_path}/composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('${base_path}/composer-setup.php'); } echo PHP_EOL;"
+  ${php_path} ${base_path}/composer-setup.php --install-dir="${base_path}"
+  ${php_path} -r "unlink('${base_path}/composer-setup.php');"
+ 
   # Setup [FakerPHP/Faker](https://github.com/FakerPHP/Faker)
-  ${php_path} composer.phar require fakerphp/faker
+  ${php_path} "${base_path}/composer.phar" --working-dir="${base_path}" require fakerphp/faker
 }
 
 development_env="$1" # Development Environment: xampp/docker/vagrant
