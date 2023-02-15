@@ -49,10 +49,16 @@ function setup_environment {
   ${php_path} "${base_path}/composer.phar" --working-dir="${base_path}" require fakerphp/faker
 }
 
+function generate_data {
+  table_name="$1"
+  row_number="$2"
+  ${php_path} "${base_path}/generate-data.php" "${table_name}" "$row_number"
+}
+
 development_env="$1" # Development Environment: xampp/docker/vagrant
 work_type="$2" # Work Type: backup/restore/fetch
 
-if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'php' && ${work_type} != 'setup' ) ]]
+if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'php' && ${work_type} != 'setup' && ${work_type} != 'generate' ) ]]
 then
   echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php/setup)"
   exit
@@ -93,4 +99,7 @@ then
 elif [[ ${work_type} == 'setup' ]]
 then
   setup_environment
+elif [[ ${work_type} == 'generate' ]]
+then
+  generate_data "$3" "$4"
 fi
