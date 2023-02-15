@@ -14,7 +14,7 @@ class GenerateData
   
     public function truncate($table_name='')
 	{ 
-      $stmt = $this->pdo->prepare("truncate table $table_name");
+      $stmt = $this->pdo->prepare("truncate table `$table_name`");
       $stmt->execute();
     }
   
@@ -55,5 +55,11 @@ if(array_key_exists("1", $argv)) {
     } else {
         $row_number = 1;
     }
-    $generate_data->$table_name($row_number);
+	if (method_exists($generate_data, "$table_name")) {
+	    $generate_data->$table_name($row_number);
+		echo "Data generated successfully.";
+	} else {
+		echo "Method/Table '$table_name' does not exist!";
+		exit();
+	}  
 }

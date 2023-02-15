@@ -67,7 +67,7 @@ function generate_data {
 	exit
   fi
   ${php_path} "${base_path}/generate-data.php" "${table_name}" "$row_number"
-  echo "Data generated successfully."
+  #echo "Data generated successfully."
 }
 
 development_env="$1" # Development Environment: xampp/docker/vagrant
