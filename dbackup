@@ -1,10 +1,8 @@
 #!/bin/bash
 
 base_path="__database"
-db_server_name='localhost'
-db_user_name='root'
-db_password=''
-database_name='test_db_1'
+source "${base_path}/config"
+#echo "DB Server Name: ${db_server_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}"
 
 function db_backup() {
   if [ ! -d "${base_path}/structure" ]
@@ -26,10 +24,10 @@ function db_backup() {
 
   if [[ ${development_env} == 'xampp' ]]
   then
-    ${mysqldump_path} --routines --no-data -h ${db_server_name} -u ${db_user_name} -p${db_password} ${database_name} > "${base_path}/structure/${database_name}.sql"
+    ${mysqldump_path} --routines --no-data -h "${db_server_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
 	if [[ ${db_full_backup} == 'yes' ]]
 	then
-	  ${mysqldump_path} --routines -h ${db_server_name} -u ${db_user_name} -p${db_password} ${database_name} > "${base_path}/full/${database_name}_full.sql"
+	  ${mysqldump_path} --routines -h "${db_server_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
 	fi
   elif [[ ${development_env} == 'docker' ]]
   then
