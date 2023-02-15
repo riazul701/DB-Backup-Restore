@@ -1,0 +1,6 @@
+full/*
+!full/.gitkeep
+
+composer-setup.php
+composer.phar
+vendor/

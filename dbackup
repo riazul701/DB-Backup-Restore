@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base_path="_database"
+base_path="__database"
 db_server_name='localhost'
 db_user_name='root'
 db_password=''
@@ -37,7 +37,18 @@ function php_execute() {
 }
 
 function setup_environment {
-  ${php_path} -r "copy('https://getcomposer.org/installer', '${base_path}/composer-setup.php');"
+  original_pwd="${PWD}"
+  cd "${base_path}"
+
+  # Setup Composer
+  ${php_path} -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  ${php_path} -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+  ${php_path} composer-setup.php
+  ${php_path} -r "unlink('composer-setup.php');"
+  mv composer.phar composer.phar
+  
+  # Setup [FakerPHP/Faker](https://github.com/FakerPHP/Faker)
+  ${php_path} composer.phar require fakerphp/faker
 }
 
 development_env="$1" # Development Environment: xampp/docker/vagrant
@@ -45,7 +56,7 @@ work_type="$2" # Work Type: backup/restore/fetch
 
 if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'php' && ${work_type} != 'setup' ) ]]
 then
-  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php)"
+  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php/setup)"
   exit
 fi
 
