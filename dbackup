@@ -2,7 +2,7 @@
 
 base_path="__database"
 source "${base_path}/config"
-#echo "DB Server Name: ${db_server_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}"
+#echo "DB Host Name: ${db_host_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}"
 
 function db_backup() {
   if [ ! -d "${base_path}/structure" ]
@@ -24,10 +24,10 @@ function db_backup() {
 
   if [[ ${development_env} == 'xampp' ]]
   then
-    ${mysqldump_path} --routines --no-data -h "${db_server_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
+    ${mysqldump_path} --routines --no-data -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
 	if [[ ${db_full_backup} == 'yes' ]]
 	then
-	  ${mysqldump_path} --routines -h "${db_server_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
+	  ${mysqldump_path} --routines -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
 	fi
   elif [[ ${development_env} == 'docker' ]]
   then
@@ -61,6 +61,11 @@ function setup_environment {
 function generate_data {
   table_name="$1"
   row_number="$2"
+  if [[ "${table_name}" == '' || "${row_number}" == '' ]]
+  then
+    echo "Wrong Input! Enter both table-name and row-number."
+	exit
+  fi
   ${php_path} "${base_path}/generate-data.php" "${table_name}" "$row_number"
   echo "Data generated successfully."
 }

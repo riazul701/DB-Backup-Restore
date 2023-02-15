@@ -20,7 +20,7 @@ class GenerateData
   
     public function table_1($count)
 	{
-        $sql = 'INSERT INTO table_1 (col_1, col_2, col_3) VALUES (:col_1, :col_2, :col_3)';
+        $sql = 'INSERT INTO `table 1` (`col 1`, `col 2`, `col 3`) VALUES (:col_1, :col_2, :col_3)';
         $stmt = $this->pdo->prepare($sql);
 
         for ($i=0; $i < $count; $i++) {
@@ -33,7 +33,18 @@ class GenerateData
     }
 }
 
-$pdo = new PDO('mysql:host=localhost;dbname=test_db_1', 'root', '', array(PDO::ATTR_PERSISTENT => true));
+
+$config_array = explode("\n", file_get_contents(__DIR__.'/config'));
+foreach($config_array as $config_each) {
+	$config_each_explode = explode("=", $config_each);
+	$config_name = $config_each_explode[0];
+	$config_value = str_replace("'", "", $config_each_explode[1]);
+	${$config_name} = $config_value;
+	//echo $config_name.':'. $config_value.';' ;
+}
+//echo "DB Host Name: $db_host_name; DB User Name: $db_user_name; DB Password: $db_password; Database Name: $database_name";
+
+$pdo = new PDO("mysql:host=$db_host_name;dbname=$database_name", "$db_user_name", "$db_password", array(PDO::ATTR_PERSISTENT => true));
 $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 $generate_data = new GenerateData($pdo);
 
