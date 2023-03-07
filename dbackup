@@ -1,6 +1,26 @@
 #!/bin/bash
 
-base_path="__database"
+function help_manual() {
+  echo "----------------Xampp----------------"
+  echo "Backup Database (structure, data): dbackup xampp backup"
+  echo "----------------Docker----------------"
+  echo "Backup Database (structure, data): dbackup docker backup"
+  echo "Backup Database (structure, full, data): dbackup docker backup --full-db"
+}
+
+if [[ "$1" == '--help' ]]
+then
+  help_manual
+  exit
+fi
+
+base_path="${PWD}/__database"
+if [[ ! -f "${base_path}/config" ]]
+then
+  echo "Config file does not exist at: '${base_path}/config'"
+  exit
+fi
+
 source "${base_path}/config"
 #dump_table_data="'table 1' 'table 2'"
 echo "DB Host Name: ${db_host_name}; DB User Name: ${db_user_name}; DB Password: ${db_password}; Database Name: ${database_name}; Dump Table Data: ${dump_table_data}"
@@ -25,21 +45,59 @@ function db_backup() {
 
   if [[ ${development_env} == 'xampp' ]]
   then
-    ${mysqldump_path} --routines --no-data --compact -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}.sql"
-	if [[ ${db_full_backup} == 'yes' ]]
-	then
-	  ${mysqldump_path} --routines -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
-	fi
-	eval "${mysqldump_path} --routines --no-create-info --compact -h \"${db_host_name}\" -u \"${db_user_name}\" -p\"${db_password}\" \"${database_name}\" ${dump_table_data} > \"${base_path}/data/${database_name}(data).sql\""
+    ${mysqldump_path} --routines --no-data --compact -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/structure/${database_name}(structure).sql"
+	  if [[ ${db_full_backup} == 'yes' ]]
+	  then
+	    ${mysqldump_path} --routines -h "${db_host_name}" -u "${db_user_name}" -p"${db_password}" "${database_name}" > "${base_path}/full/${database_name}(full).sql"
+	  fi
+	  eval "${mysqldump_path} --routines --no-create-info --compact -h \"${db_host_name}\" -u \"${db_user_name}\" -p\"${db_password}\" \"${database_name}\" ${dump_table_data} > \"${base_path}/data/${database_name}(data).sql\""
+
   elif [[ ${development_env} == 'docker' ]]
   then
-    echo 'Docker-Backup has not impemented yet.'
-	exit
+    read -p "Enter MySQL/MariaDB Container Name: `echo $'\n> '`" mysql_container
+    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-data --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name}>\"/home/${database_name}(structure).sql\""
+    sudo docker cp ${mysql_container}:"/home/${database_name}(structure).sql" "./__database/structure/${database_name}(structure).sql"
+    if [[ ${db_full_backup} == 'yes' ]]
+    then
+      sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name}>\"/home/${database_name}(full).sql\""
+      sudo docker cp ${mysql_container}:"/home/${database_name}(full).sql" "./__database/full/${database_name}(full).sql"
+    fi
+    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-create-info --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} ${dump_table_data}>\"/home/${database_name}(data).sql\""
+    sudo docker cp ${mysql_container}:"/home/${database_name}(data).sql" "./__database/data/${database_name}(data).sql"
+    sudo docker exec -it ${mysql_container} sh -c "rm /home/*.sql"
+
   elif [[ ${development_env} == 'vagrant' ]]
   then
     echo 'Vagrant-Backup has not impemented yet.'
-	exit
   fi
+  echo "Database backup completed successfully."
+}
+
+function db_restore() {
+  db_restore_file_path="${base_path}/full/${database_name}(full).sql"
+  if [[ ! -f "${db_restore_file_path}" ]]
+  then
+    echo "Database sql file does not exist at: '${db_restore_file_path}'"
+    exit
+  fi
+  read -p "Do you want to restore DB '${db_restore_file_path}'? (yes/no) `echo $'\n> '`" restore_confirm
+  if [[ "${restore_confirm}" != 'yes' ]]
+  then
+    echo "You have rejected to restore database!"
+    exit
+  fi
+
+  #if [[ ${development_env} == 'xampp' ]]
+  #then
+  
+  if [[ ${development_env} == 'docker' ]]
+  then
+    read -p "Enter MySQL/MariaDB Container Name: `echo $'\n> '`" mysql_container
+    sudo docker cp ${db_restore_file_path} ${mysql_container}:"/home/${database_name}(full).sql"
+    sudo docker exec -it ${mysql_container} sh -c "${mysql_path} -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} < \"/home/${database_name}(full).sql\""
+    sudo docker exec -it ${mysql_container} sh -c "rm /home/*.sql"
+  fi
+  echo "Database restored successfully."
 }
 
 function php_execute() {
@@ -49,7 +107,7 @@ function php_execute() {
 
 #function composer_execute() {}
 
-function setup_environment {
+function setup_environment() {
   # Setup Composer
   ${php_path} -r "copy('https://getcomposer.org/installer', '${base_path}/composer-setup.php');"
   ${php_path} -r "if (hash_file('sha384', '${base_path}/composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('${base_path}/composer-setup.php'); } echo PHP_EOL;"
@@ -75,7 +133,7 @@ function generate_data {
 development_env="$1" # Development Environment: xampp/docker/vagrant
 work_type="$2" # Work Type: backup/restore/fetch
 
-if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'php' && ${work_type} != 'setup' && ${work_type} != 'generate' ) ]]
+if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'restore' && ${work_type} != 'php' && ${work_type} != 'setup' && ${work_type} != 'generate' ) ]]
 then
   echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php/setup)"
   exit
@@ -98,8 +156,8 @@ then
   fi
 elif [[ ${development_env} == 'docker' ]]
 then
-  mysqldump_path='mysqldump'
-  mysql_path='mysql'
+  mysqldump_path='mysqldump' # LaraDock
+  mysql_path='mysql' # LaraDock
 elif [[ ${development_env} == 'vagrant' ]]
 then
   mysqldump_path='/bin/mysqldump' # Laravel-Homestead
@@ -115,6 +173,9 @@ fi
 if [[ ${work_type} == 'backup' ]]
 then
   db_backup
+elif [[ ${work_type} == 'restore' ]]
+then
+  db_restore
 elif [[ ${work_type} == 'php' ]]
 then
   php_execute "$3"
