@@ -22,7 +22,7 @@ fi
 base_path="${PWD}/__database"
 if [[ ! -f "${base_path}/config" ]]
 then
-  echo "Config file does not exist at: '${base_path}/config'"
+  echo "DBackup: Config file does not exist at: '${base_path}/config'"
   exit
 fi
 
@@ -75,20 +75,20 @@ function db_backup() {
   then
     echo 'Vagrant-Backup has not impemented yet.'
   fi
-  echo "Database backup completed successfully."
+  echo "DBackup: Database backup completed successfully."
 }
 
 function db_restore() {
   db_restore_file_path="${base_path}/full/${database_name}(full).sql"
   if [[ ! -f "${db_restore_file_path}" ]]
   then
-    echo "Database sql file does not exist at: '${db_restore_file_path}'"
+    echo "DBackup: Database sql file does not exist at: '${db_restore_file_path}'"
     exit
   fi
   read -p "Do you want to restore DB '${db_restore_file_path}'? (yes/no) `echo $'\n> '`" restore_confirm
   if [[ "${restore_confirm}" != 'yes' ]]
   then
-    echo "You have rejected to restore database!"
+    echo "DBackup: You have rejected to restore database!"
     exit
   fi
 
@@ -103,7 +103,7 @@ function db_restore() {
     sudo docker exec -it ${mysql_container} sh -c "${mysql_path} -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} < \"/home/${database_name}(full).sql\""
     sudo docker exec -it ${mysql_container} sh -c "rm /home/*.sql"
   fi
-  echo "Database restored successfully."
+  echo "DBackup: Database restored successfully."
 }
 
 function php_execute() {
@@ -141,7 +141,7 @@ work_type="$2" # Work Type: backup/restore/fetch
 
 if [[ ( ${development_env} != 'xampp' && ${development_env} != 'docker' && ${development_env} != 'vagrant' ) || ( ${work_type} != 'backup' && ${work_type} != 'restore' && ${work_type} != 'php' && ${work_type} != 'setup' && ${work_type} != 'generate' ) ]]
 then
-  echo "Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php/setup)"
+  echo "DBackup: Please Provide Argument-1 (xampp/docker/vagrant) and Argument-2 (backup/php/setup)"
   exit
 fi
 
@@ -164,6 +164,7 @@ elif [[ ${development_env} == 'docker' ]]
 then
   mysqldump_path='mysqldump' # LaraDock
   mysql_path='mysql' # LaraDock
+  sudo docker container ls --filter "name=mysql" --filter "name=mariadb"
 elif [[ ${development_env} == 'vagrant' ]]
 then
   mysqldump_path='/bin/mysqldump' # Laravel-Homestead
