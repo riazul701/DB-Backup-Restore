@@ -1,11 +1,16 @@
 #!/bin/bash
 
 function help_manual() {
-  echo "----------------Xampp----------------"
+  echo "-------------------Xampp-------------------"
   echo "Backup Database (structure, data): dbackup xampp backup"
-  echo "----------------Docker----------------"
+  echo "Backup Database (structure, full, data): dbackup xampp backup --full-db"
+  echo "Restore Database: dbackup xampp restore"
+  echo "-------------------Docker-------------------"
   echo "Backup Database (structure, data): dbackup docker backup"
   echo "Backup Database (structure, full, data): dbackup docker backup --full-db"
+  echo "Restore Database: dbackup docker restore"
+  echo "-------------------Notes-------------------"
+  echo "1. In Docker DB host name 'localhost' works, it works from inside of container."
 }
 
 if [[ "$1" == '--help' ]]
@@ -87,10 +92,11 @@ function db_restore() {
     exit
   fi
 
-  #if [[ ${development_env} == 'xampp' ]]
-  #then
-  
-  if [[ ${development_env} == 'docker' ]]
+  if [[ ${development_env} == 'xampp' ]]
+  then
+    ${mysql_path} -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} < "${db_restore_file_path}"
+
+  elif [[ ${development_env} == 'docker' ]]
   then
     read -p "Enter MySQL/MariaDB Container Name: `echo $'\n> '`" mysql_container
     sudo docker cp ${db_restore_file_path} ${mysql_container}:"/home/${database_name}(full).sql"
