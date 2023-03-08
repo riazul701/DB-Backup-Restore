@@ -10,7 +10,7 @@ function help_manual() {
   echo "Backup Database (structure, full, data): dbackup docker backup --full-db"
   echo "Restore Database: dbackup docker restore"
   echo "-------------------Notes-------------------"
-  echo "1. In Docker DB host name 'localhost' works, it works from inside of container."
+  echo "1. In Docker DB host name 'localhost' works, because it works from inside of container."
 }
 
 if [[ "$1" == '--help' ]]
@@ -60,14 +60,14 @@ function db_backup() {
   elif [[ ${development_env} == 'docker' ]]
   then
     read -p "Enter MySQL/MariaDB Container Name: `echo $'\n> '`" mysql_container
-    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-data --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name}>\"/home/${database_name}(structure).sql\""
+    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-data --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} > \"/home/${database_name}(structure).sql\""
     sudo docker cp ${mysql_container}:"/home/${database_name}(structure).sql" "./__database/structure/${database_name}(structure).sql"
     if [[ ${db_full_backup} == 'yes' ]]
     then
-      sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name}>\"/home/${database_name}(full).sql\""
+      sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} > \"/home/${database_name}(full).sql\""
       sudo docker cp ${mysql_container}:"/home/${database_name}(full).sql" "./__database/full/${database_name}(full).sql"
     fi
-    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-create-info --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} ${dump_table_data}>\"/home/${database_name}(data).sql\""
+    sudo docker exec -it ${mysql_container} sh -c "${mysqldump_path} --routines --no-create-info --compact -h ${db_host_name} -u ${db_user_name} -p${db_password} ${database_name} ${dump_table_data} > \"/home/${database_name}(data).sql\""
     sudo docker cp ${mysql_container}:"/home/${database_name}(data).sql" "./__database/data/${database_name}(data).sql"
     sudo docker exec -it ${mysql_container} sh -c "rm /home/*.sql"
 
