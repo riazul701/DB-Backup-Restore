@@ -1,9 +1,5 @@
-data/*
-!data/.gitkeep
 full/*
 !full/.gitkeep
-structure/*
-!structure/.gitkeep
 
 composer-setup.php
 composer.phar
